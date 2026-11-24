@@ -242,3 +242,28 @@ it('protects a changed hours draft across page and date controls until canceled'
   fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
   expect(nextPage.hasAttribute('disabled')).toBe(false)
 })
+
+it('distinguishes reversed and oversized ranges and accepts a single day', async () => {
+  const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => page(20))
+  vi.stubGlobal('fetch', fetcher)
+  render(<App />)
+  await screen.findByRole('table')
+
+  const end = screen.getByLabelText('To')
+  const apply = screen.getByRole('button', { name: 'Apply range' })
+  fireEvent.change(end, { target: { value: '2025-12-28' } })
+  fireEvent.click(apply)
+  expect(screen.getByRole('alert').textContent).toBe('End date must be on or after the start date.')
+
+  fireEvent.change(end, { target: { value: '2027-12-30' } })
+  fireEvent.click(apply)
+  expect(screen.getByRole('alert').textContent).toContain('within two years')
+  expect(screen.getByRole('table')).toBeTruthy()
+  expect(fetcher).toHaveBeenCalledTimes(1)
+
+  fireEvent.change(end, { target: { value: '2025-12-29' } })
+  fireEvent.click(apply)
+  await screen.findByRole('button', { name: 'Edit weekly hours for Eli' })
+  expect(screen.queryByRole('alert')).toBeNull()
+  expect(fetcher).toHaveBeenCalledTimes(2)
+})

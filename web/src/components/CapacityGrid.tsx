@@ -24,10 +24,15 @@ export function CapacityGrid({ initialRange }: { initialRange: DateRange }) {
   function apply(event: FormEvent) {
     event.preventDefault()
 
+    if (draft.to < draft.from) {
+      setError('End date must be on or after the start date.')
+      return
+    }
+
     const limit = new Date(draft.from + 'T00:00:00Z')
     limit.setUTCFullYear(limit.getUTCFullYear() + 2)
 
-    if (draft.to < draft.from || new Date(draft.to + 'T00:00:00Z') > limit) {
+    if (new Date(draft.to + 'T00:00:00Z') > limit) {
       setError('Choose an end date within two years of the start date.')
 
       return
