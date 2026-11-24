@@ -24,8 +24,7 @@
 
 ## What did the spec not tell you?
 
-There are things this brief doesn't specify. Which ones did you hit, what did you decide,
-and why?
+The spec only defined how to handle full weeks, not how to handle partial weeks. The problem is if someone works for idk 24 hours per week, and decide to look at 3 days in week if they are available, they are not at full availability as somone working 40 hours. Adapted the GET capacatiy API calculates to take care of that during plan phase. 
 
 -
 

@@ -1,14 +1,15 @@
 import type { WeekLoad } from '../capacity.types'
 import { hourFormatter } from '../utils'
+import './LoadCell.modules.css'
 
 export function LoadCell({ allocated, capacity }: WeekLoad) {
   let percent = 0
-  let className = ''
+  let className = 'load-cell'
   let overage = null
 
   if (allocated > capacity) {
     percent = 100
-    className = 'over'
+    className = 'load-cell over'
     overage = <span className="overage">{hourFormatter.format(allocated - capacity)} h over</span>
   } else if (capacity > 0) {
     percent = allocated / capacity * 100

@@ -3,6 +3,7 @@ import type { CapacityPage, DateRange, PersonLoad } from '../capacity.types'
 import { hourFormatter } from '../utils'
 import { LoadCell } from './LoadCell'
 import { WeeklyHours } from './WeeklyHours'
+import './CapacityTable.modules.css'
 
 interface CapacityTableProps extends DateRange {
   page: number
@@ -129,7 +130,7 @@ export function CapacityTable({ from, to, page, onPage, saving, onSaving }: Capa
   }
 
   return (
-    <>
+    <div className="capacity-table">
       {notice}
       {status}
       <div className="scroll" role="region" aria-label="Weekly allocations" tabIndex={0}>
@@ -167,6 +168,6 @@ export function CapacityTable({ from, to, page, onPage, saving, onSaving }: Capa
           <button disabled={saving || page * data.pageSize >= data.total} onClick={() => navigate(page + 1)}>Next page</button>
         </div>
       </footer>
-    </>
+    </div>
   )
 }

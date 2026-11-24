@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import type { DateRange } from '../capacity.types'
 import { shiftWeek } from '../utils'
 import { CapacityTable } from './CapacityTable'
+import './CapacityGrid.modules.css'
 
 export function CapacityGrid({ initialRange }: { initialRange: DateRange }) {
   const [range, setRange] = useState(initialRange)
@@ -45,7 +46,7 @@ export function CapacityGrid({ initialRange }: { initialRange: DateRange }) {
   }
 
   return (
-    <>
+    <div className="capacity-grid">
       <div className="toolbar">
         <form className="dates" onSubmit={apply}>
           <label>From<input type="date" required value={draft.from}
@@ -61,6 +62,6 @@ export function CapacityGrid({ initialRange }: { initialRange: DateRange }) {
       </div>
       {rangeError}
       <CapacityTable {...range} page={page} onPage={setPage} saving={saving} onSaving={setSaving} />
-    </>
+    </div>
   )
 }

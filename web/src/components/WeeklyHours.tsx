@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import type { PersonLoad } from '../capacity.types'
+import './WeeklyHours.modules.css'
 
 interface WeeklyHoursProps {
   person: PersonLoad
@@ -55,7 +56,7 @@ export function WeeklyHours({
 
   if (editingID !== person.id) {
     return (
-      <button className="edit" disabled={editingID !== null}
+      <button className="weekly-hours-edit" disabled={editingID !== null}
         aria-label={'Edit weekly hours for ' + person.name} onClick={startEditing}>
         {formattedHours} h / week <span>Edit</span>
       </button>
@@ -73,7 +74,7 @@ export function WeeklyHours({
   }
 
   return (
-    <form className="editor" onSubmit={save}>
+    <form className="weekly-hours-editor" onSubmit={save}>
       <input autoFocus required disabled={saving} type="number" min="0" max="168" step="any"
         aria-label={'Weekly hours for ' + person.name} value={draft}
         onChange={event => setDraft(event.target.value)} />
