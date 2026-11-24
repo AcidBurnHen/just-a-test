@@ -1,0 +1,257 @@
+{
+  "info": {
+    "name": "Capacity grid routes",
+    "description": "Run in order against the local seeded assignment API. Changes the first person’s weekly hours, verifies the partial-week result, and restores their original hours.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Read two partial weeks",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/capacity?from=2026-01-07&to=2026-01-12&page=1"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Returns a paged, date-keyed roster', () => {",
+              "  pm.response.to.have.status(200);",
+              "  const page = pm.response.json();",
+              "  pm.expect(page.weeks).to.eql(['2026-01-05', '2026-01-12']);",
+              "  pm.expect(page.people).to.have.lengthOf(page.pageSize);",
+              "  pm.expect(page.total).to.be.at.least(page.people.length);",
+              "  for (const person of page.people) {",
+              "    pm.expect(Object.keys(person.weeks)).to.have.members(page.weeks);",
+              "    pm.expect(person.weeks['2026-01-05'].capacity).to.be.closeTo(person.weeklyHours * 3 / 5, 0.000001);",
+              "    pm.expect(person.weeks['2026-01-05'].allocated).to.be.a('number');",
+              "  }",
+              "  const first = page.people[0];",
+              "  pm.collectionVariables.set('personId', first.id);",
+              "  pm.collectionVariables.set('weeklyHours', first.weeklyHours);",
+              "  pm.collectionVariables.set('firstPageIds', JSON.stringify(page.people.map(p => p.id)));",
+              "  pm.collectionVariables.set('editedHours', first.weeklyHours === 24 ? 32 : 24);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Read the next roster page",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/capacity?from=2026-01-07&to=2026-01-12&page=2"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Offset pagination returns different people', () => {",
+              "  pm.response.to.have.status(200);",
+              "  const ids = JSON.parse(pm.collectionVariables.get('firstPageIds'));",
+              "  const page = pm.response.json();",
+              "  pm.expect(page.people.length).to.be.greaterThan(0);",
+              "  page.people.forEach(p => pm.expect(ids).not.to.include(p.id));",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reject a reversed date range",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/capacity?from=2026-01-12&to=2026-01-07"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Invalid range returns 400', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Change weekly capacity",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/people/{{personId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"weeklyHours\": {{editedHours}}}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Confirms the persisted person and hours', () => {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.json()).to.eql({ id: Number(pm.collectionVariables.get('personId')), weeklyHours: Number(pm.collectionVariables.get('editedHours')) });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Refetch the changed page",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/capacity?from=2026-01-07&to=2026-01-12&page=1"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Reads back persisted hours and prorated capacity', () => {",
+              "  pm.response.to.have.status(200);",
+              "  const person = pm.response.json().people.find(p => p.id === Number(pm.collectionVariables.get('personId')));",
+              "  const expected = Number(pm.collectionVariables.get('editedHours'));",
+              "  pm.expect(person.weeklyHours).to.equal(expected);",
+              "  pm.expect(person.weeks['2026-01-05'].capacity).to.be.closeTo(expected * 3 / 5, 0.000001);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Restore original weekly hours",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/people/{{personId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"weeklyHours\": {{weeklyHours}}}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Confirms the persisted person and hours', () => {",
+              "  pm.response.to.have.status(200);",
+              "  pm.expect(pm.response.json()).to.eql({ id: Number(pm.collectionVariables.get('personId')), weeklyHours: Number(pm.collectionVariables.get('weeklyHours')) });",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Verify restoration",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/capacity?from=2026-01-07&to=2026-01-12&page=1"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Reads back persisted hours and prorated capacity', () => {",
+              "  pm.response.to.have.status(200);",
+              "  const person = pm.response.json().people.find(p => p.id === Number(pm.collectionVariables.get('personId')));",
+              "  const expected = Number(pm.collectionVariables.get('weeklyHours'));",
+              "  pm.expect(person.weeklyHours).to.equal(expected);",
+              "  pm.expect(person.weeks['2026-01-05'].capacity).to.be.closeTo(expected * 3 / 5, 0.000001);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reject a negative capacity",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/people/{{personId}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"weeklyHours\": -1}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Invalid hours return 400', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reject a missing person",
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/api/people/2147483647",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"weeklyHours\": 24}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Unknown seeded person returns 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

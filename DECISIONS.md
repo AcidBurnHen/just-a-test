@@ -8,14 +8,13 @@
 - On success render the returned capacity data for the selected date range and page.
 - On failure preserve previously loaded data, indicate that it may be stale, and then we display an error with a retry option. Also, showing an error state if no data has been loaded
 
-2. OATCH -/api/people/{id}
+2. PATCH -/api/people/{id}
 - Here let's do -> cache invalidation & pessimistic mutation
 - Wait for server confirmation before updating the grid, invalidate cached capacity data and keep capacity calculations centralized on the backend
 - On success refetch the visible page and date range using server-calculated values
 - On failer retain the entered value, keep the editor open and display a retry message
 
-- Then I test the response on Postman
-
+- Tested the APIs on Postman (used AI to scaffold collections for quicker testing data)
 
 ## What did the spec not tell you?
 
