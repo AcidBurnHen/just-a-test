@@ -10,6 +10,8 @@ interface CapacityTableProps extends DateRange {
   onPage: (page: number) => void
   saving: boolean
   onSaving: (saving: boolean) => void
+  hoursDirty: boolean
+  onHoursDirty: (dirty: boolean) => void
 }
 
 interface LoadedPage extends DateRange {
@@ -22,7 +24,7 @@ const weekDate = new Intl.DateTimeFormat('en', {
   month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC',
 })
 
-export function CapacityTable({ from, to, page, onPage, saving, onSaving }: CapacityTableProps) {
+export function CapacityTable({ from, to, page, onPage, saving, onSaving, hoursDirty, onHoursDirty }: CapacityTableProps) {
   const [editingID, setEditingID] = useState<number | null>(null)
   const [revision, setRevision] = useState(0)
   const [lastRead, setLastRead] = useState<LoadedPage | null>(null)
@@ -93,6 +95,7 @@ export function CapacityTable({ from, to, page, onPage, saving, onSaving }: Capa
   }
 
   function saved(person: PersonLoad) {
+    onHoursDirty(false)
     setEditingID(null)
     setSavedNotice({ range, text: 'Weekly hours saved for ' + person.name + '.' })
     refresh()
@@ -153,7 +156,7 @@ export function CapacityTable({ from, to, page, onPage, saving, onSaving }: Capa
                   <div className="name">{person.name}</div>
                   <WeeklyHours person={person} formattedHours={hourFormatter.format(person.weeklyHours)}
                     editable={current && !failed} editingID={editingID} onEdit={setEditingID}
-                    saving={saving} onSaving={onSaving} onSaved={() => saved(person)} />
+                    saving={saving} onSaving={onSaving} onDirty={onHoursDirty} onSaved={() => saved(person)} />
                 </th>
                 {data.weeks.map(date => <LoadCell key={date} {...person.weeks[date]} />)}
               </tr>
@@ -164,8 +167,8 @@ export function CapacityTable({ from, to, page, onPage, saving, onSaving }: Capa
       <footer>
         <span>People {(displayedPage - 1) * data.pageSize + 1}–{Math.min(displayedPage * data.pageSize, data.total)} of {data.total}</span>
         <div className="arrows">
-          <button disabled={saving || page === 1} onClick={() => navigate(page - 1)}>Previous page</button>
-          <button disabled={saving || page * data.pageSize >= data.total} onClick={() => navigate(page + 1)}>Next page</button>
+          <button disabled={saving || hoursDirty || page === 1} onClick={() => navigate(page - 1)}>Previous page</button>
+          <button disabled={saving || hoursDirty || page * data.pageSize >= data.total} onClick={() => navigate(page + 1)}>Next page</button>
         </div>
       </footer>
     </div>

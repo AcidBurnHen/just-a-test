@@ -206,3 +206,39 @@ it.each([false, true])('can retry a stalled capacity read (previous roster: %s)'
   await screen.findByRole('button', { name: 'Edit weekly hours for Eli' })
   expect(screen.getByRole('row', { name: /Eli/ }).textContent).toContain('20 / 24 h')
 })
+
+it('preserves unapplied dates until the manager resets or applies them', async () => {
+  vi.stubGlobal('fetch', vi.fn<typeof fetch>().mockImplementation(async () => page(0)))
+  render(<App />)
+  await screen.findByRole('table')
+
+  fireEvent.change(screen.getByLabelText('From'), { target: { value: '2026-01-13' } })
+  const next = screen.getByRole('button', { name: 'Next week' })
+  expect(next.hasAttribute('disabled')).toBe(true)
+  fireEvent.click(next)
+  expect(screen.getByDisplayValue('2026-01-13')).toBeTruthy()
+
+  fireEvent.click(screen.getByRole('button', { name: 'Reset dates' }))
+  expect(screen.getByDisplayValue('2025-12-29')).toBeTruthy()
+  expect(next.hasAttribute('disabled')).toBe(false)
+})
+
+it('protects a changed hours draft across page and date controls until canceled', async () => {
+  const response = await page(40).json()
+  response.total = 50
+  vi.stubGlobal('fetch', vi.fn<typeof fetch>().mockResolvedValue(Response.json(response)))
+  render(<App />)
+  fireEvent.click(await screen.findByRole('button', { name: 'Edit weekly hours for Eli' }))
+
+  const nextPage = screen.getByRole('button', { name: 'Next page' })
+  expect(nextPage.hasAttribute('disabled')).toBe(false)
+  fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '17.25' } })
+  for (const name of ['Next page', 'Apply range', 'Previous week', 'Next week']) {
+    expect(screen.getByRole('button', { name }).hasAttribute('disabled')).toBe(true)
+  }
+
+  fireEvent.click(nextPage)
+  expect(screen.getByDisplayValue('17.25')).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+  expect(nextPage.hasAttribute('disabled')).toBe(false)
+})

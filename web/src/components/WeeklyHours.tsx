@@ -11,10 +11,11 @@ interface WeeklyHoursProps {
   saving: boolean
   onSaving: (saving: boolean) => void
   onSaved: () => void
+  onDirty: (dirty: boolean) => void
 }
 
 export function WeeklyHours({
-  person, formattedHours, editable, editingID, onEdit, saving, onSaving, onSaved,
+  person, formattedHours, editable, editingID, onEdit, saving, onSaving, onSaved, onDirty,
 }: WeeklyHoursProps) {
   const [draft, setDraft] = useState('')
   const [error, setError] = useState('')
@@ -23,6 +24,16 @@ export function WeeklyHours({
     setDraft(String(person.weeklyHours))
     setError('')
     onEdit(person.id)
+  }
+
+  function updateDraft(value: string) {
+    setDraft(value)
+    onDirty(value === '' || Number(value) !== person.weeklyHours)
+  }
+
+  function cancel() {
+    onDirty(false)
+    onEdit(null)
   }
 
   async function save(event: FormEvent) {
@@ -69,6 +80,10 @@ export function WeeklyHours({
   }
 
   let errorMessage = null
+  let draftHint = null
+  if (draft === '' || Number(draft) !== person.weeklyHours) {
+    draftHint = <small>Save or cancel your hours before navigating.</small>
+  }
   if (error) {
     errorMessage = <small role="alert">{error}</small>
   }
@@ -77,12 +92,13 @@ export function WeeklyHours({
     <form className="weekly-hours-editor" onSubmit={save}>
       <input autoFocus required disabled={saving} type="number" min="0" max="168" step="any"
         aria-label={'Weekly hours for ' + person.name} value={draft}
-        onChange={event => setDraft(event.target.value)} />
+        onChange={event => updateDraft(event.target.value)} />
 
       <button className="primary" disabled={saving}>{saveLabel}</button>
-      <button type="button" disabled={saving} onClick={() => onEdit(null)}>Cancel</button>
+      <button type="button" disabled={saving} onClick={cancel}>Cancel</button>
 
       {errorMessage}
+      {draftHint}
     </form>
   )
 }
