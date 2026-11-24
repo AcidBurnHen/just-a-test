@@ -1,0 +1,5 @@
+@scope (.app-header) {
+  :scope { margin-bottom: 1.6rem; }
+  h1 { font-size: clamp(2rem, 3vw, 3rem); letter-spacing: -.05em; margin: 0; }
+  p { color: #655d69; margin: .5rem 0 0; }
+}

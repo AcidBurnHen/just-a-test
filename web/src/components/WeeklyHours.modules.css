@@ -1,0 +1,30 @@
+@scope (.weekly-hours-edit) {
+  :scope {
+    min-height: 1.8rem;
+    padding: .2rem 0;
+    font-size: .78rem;
+    font-weight: 400;
+    color: #655d69;
+    background: transparent;
+    border: 0;
+  }
+
+  span {
+    color: #624372;
+    text-decoration: underline;
+    margin-left: .35rem;
+  }
+}
+
+@scope (.weekly-hours-editor) {
+  :scope {
+    display: flex;
+    align-items: end;
+    gap: .5rem;
+    flex-wrap: wrap;
+    margin-top: .4rem;
+  }
+
+  input { width: 5rem; }
+  small { color: #943619; width: 100%; }
+}

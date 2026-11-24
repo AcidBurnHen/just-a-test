@@ -16,6 +16,12 @@
 
 - Tested the APIs on Postman (used AI to scaffold collections for quicker testing data)
 
+- Organized the frontend code in a few ways: 
+    - - Used guard clauses, explicit if statements and spacing between logical steps (rules for the AI) so I could  trace what the code was doing while reviewing AI's implementation
+    - Split styling from global styles.css into modular css files, to avoid bloat and allow the repo to grow
+    - Created utils.ts file to isolate helper functions, would organize this differently on a bigger repo
+    - Create a components folder and tests folder to isolate components and tests.
+
 ## What did the spec not tell you?
 
 There are things this brief doesn't specify. Which ones did you hit, what did you decide,

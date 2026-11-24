@@ -1,0 +1,9 @@
+@scope (.load-cell) {
+  .numbers { color: #67606c; font-size: .88rem; }
+  .numbers strong { font-size: 1rem; color: #352c3b; }
+  .track { height: 4px; max-width: 9rem; border-radius: 4px; overflow: hidden; background: #eae5ed; margin-top: .35rem; }
+  .track i { display: block; height: 100%; background: #877095; }
+  :scope.over { background: #fff3e9; }
+  :scope.over .track i { background: #b85624; }
+  .overage { display: inline-block; color: #863910; font-size: .75rem; font-weight: 650; margin-top: .25rem; }
+}
