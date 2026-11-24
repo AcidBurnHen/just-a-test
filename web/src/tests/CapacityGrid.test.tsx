@@ -1,11 +1,18 @@
 import { afterEach, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { App } from '../App'
+import { LoadCell } from '../components/LoadCell'
 import { CapacityGrid } from '../components/CapacityGrid'
 
 afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
+})
+
+it('shows a positive overage below display precision without reporting zero hours over', () => {
+  render(<table><tbody><tr><LoadCell allocated={40} capacity={39.99999} /></tr></tbody></table>)
+
+  expect(screen.getByText('< 0.0001 h over')).toBeTruthy()
 })
 
 function page(weeklyHours: number) {

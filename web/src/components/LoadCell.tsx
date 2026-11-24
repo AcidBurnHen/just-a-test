@@ -10,7 +10,14 @@ export function LoadCell({ allocated, capacity }: WeekLoad) {
   if (allocated > capacity) {
     percent = 100
     className = 'load-cell over'
-    overage = <span className="overage">{hourFormatter.format(allocated - capacity)} h over</span>
+    const excess = allocated - capacity
+    let label = hourFormatter.format(excess)
+
+    if (excess < 0.0001) {
+      label = '< 0.0001'
+    }
+
+    overage = <span className="overage">{label} h over</span>
   } else if (capacity > 0) {
     percent = allocated / capacity * 100
   }

@@ -30,8 +30,7 @@ The spec only defined how to handle full weeks, not how to handle partial weeks.
 
 ## What did you notice that looked wrong?
 
-Anything in the output that didn't match what you expected. Whether you fixed it or left
-it, we want to know you saw it.
+From the code perspective at first glance only the organization and code readability. After looking and testing in the UI i accidentally caught a bug where a cell showed 40/40h and 0h over at the same time, there should be no warning if it is 40/40 after digging I found the saved capacitiy was 39.99+ . I decided it is better to show < 0.0001 h over. Maybe I'm wrong here, but i'd rather show it than to round it up and act like nothing happened. 
 
 -
 
