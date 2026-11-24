@@ -1,0 +1,6 @@
+@scope (.capacity-app) {
+  :scope { max-width: 1480px; margin: auto; padding: clamp(1rem, 4vw, 4rem); }
+  @media (max-width: 600px) {
+    :scope { padding: 1rem .6rem; }
+  }
+}
