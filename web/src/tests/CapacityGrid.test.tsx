@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { App } from '../App'
 import { CapacityGrid } from '../components/CapacityGrid'
 
@@ -161,4 +161,41 @@ it('pages through the roster and disables navigation at either boundary', async 
   await screen.findByRole('row', { name: /Ada/ })
 
   expect(screen.getByText('People 1–1 of 2')).toBeTruthy()
+})
+
+it.each([false, true])('can retry a stalled capacity read (previous roster: %s)', async (warm) => {
+  const fetcher = vi.fn<typeof fetch>()
+
+  if (warm) {
+    fetcher.mockResolvedValueOnce(page(0))
+  }
+
+  fetcher.mockImplementationOnce(() => new Promise<Response>(() => {}))
+  fetcher.mockResolvedValueOnce(page(24))
+  vi.stubGlobal('fetch', fetcher)
+
+  if (warm) {
+    render(<App />)
+    await screen.findByRole('table')
+  }
+
+  vi.useFakeTimers()
+  try {
+    if (warm) {
+      fireEvent.click(screen.getByRole('button', { name: 'Next week' }))
+    } else {
+      render(<App />)
+    }
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(15_000) })
+
+    expect(screen.getByRole('alert').textContent).toContain('timed out')
+    expect(Boolean(screen.queryByRole('table'))).toBe(warm)
+  } finally {
+    vi.useRealTimers()
+  }
+
+  fireEvent.click(screen.getByRole('button', { name: 'Retry' }))
+  await screen.findByRole('button', { name: 'Edit weekly hours for Eli' })
+  expect(screen.getByRole('row', { name: /Eli/ }).textContent).toContain('20 / 24 h')
 })
