@@ -5,3 +5,5 @@ export function shiftWeek(value: string, direction: number) {
 
   return date.toISOString().slice(0, 10)
 }
+
+export const hourFormatter = new Intl.NumberFormat('en', { maximumFractionDigits: 4 })
