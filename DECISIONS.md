@@ -36,10 +36,13 @@ From the code perspective at first glance only the organization and code readabi
 
 ## What did the AI get wrong that you caught?
 
-One concrete example. Every real session has one.
+I asked the AI to check the implementation against my GET failure rule. The first version cleared the grid as soon as a refetch started, so if that request failed the manager lost the rows they were just looking at. Changed it to keep the previous rows, show which dates and page they belong to, and give the manager a retry optio
 
 -
-
 ## What would you do differently with a week?
+
+I would use the React Profiler so see what actually re-renders because I had no time to test that right now. There's a lot of useState in the grid I'd look into changing that as well. Also simplifying the loading and error state. 
+
+Also caching, would investigate more and see what can be cached more efficiently, I'm running out of time so I'll keep this short.. I would also do more intense QA and depending on how much time I am afforded to accomodate to the codebase I'd review with more detail. It all felt a bit rushed right now, I hope I did a good job, if not it was fun trying :)
 
 -
